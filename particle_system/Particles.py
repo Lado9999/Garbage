@@ -12,16 +12,16 @@ class Particles:
 
         # system parameters
         if type(system_size) is tuple:
-                self.W, self.H = system_size
+            self.W, self.H = system_size
         else:
-                self.W, self.H = system_size, system_size
+            self.W, self.H = system_size, system_size
 
         self.dt = dt # time_step of the simulation
 
         # positions of the ball centers
         self.R = None
-        # self.randomize('R')
-        self.arange_in_grid()
+        self.randomize('R')
+        # self.arange_in_grid()
 
         # velocities of the balls
         self.V = np.zeros((2, N))
@@ -44,19 +44,18 @@ class Particles:
         return np.sqrt(self.energies())
 
     def randomize(self, opts):
-    '''
+        '''
         Randomize positions and/or velocities of the balls
-        TODO randomize positions in a way that the balls don't overlap
-    '''
-    if 'R' in opts:
-        if self.R is None:
-            self.R = np.zeros((2, self.N))
+        '''
+        if 'R' in opts:
+            if self.R is None:
+                self.R = np.zeros((2, self.N))
 
-            self.R[0] = np.random.uniform(0.5, self.W - 0.5, self.N)
-            self.R[1] = np.random.uniform(0.5, self.H - 0.5, self.N)
+                self.R[0] = np.random.uniform(0.5, self.W - 0.5, self.N)
+                self.R[1] = np.random.uniform(0.5, self.H - 0.5, self.N)
 
-    if 'V' in opts:
-        self.V = self.speed * (2*np.random.rand(*self.V.shape) - 1)
+        if 'V' in opts:
+            self.V = self.speed * (2*np.random.rand(*self.V.shape) - 1)
 
     def step(self):
 
@@ -76,13 +75,18 @@ class Particles:
             r1, r2 = self.R.T[pair]
 
             r = r1 - r2
-            rsq = np.dot(r,r)
-            u = r*np.dot(v1 - v2, r)/rsq
+            v = v1 - v2
+            # if balls are moving away from eachother don't collide
+            # this avoids stickage
+            # TODO implement Continuous collision
+            if np.sign(np.dot(r,v)) < 0:
+                rsq = np.dot(r,r)
+                u = r*np.dot(v, r)/rsq
 
-            v1 = v1 - u
-            v2 = v2 + u
+                v1 = v1 - u
+                v2 = v2 + u
 
-            self.V.T[pair] = np.vstack((v1,v2))
+                self.V.T[pair] = np.vstack((v1,v2))
 
 
         # modify particle positions according to their velocities

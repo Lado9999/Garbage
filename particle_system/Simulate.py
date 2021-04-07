@@ -4,15 +4,15 @@ from matplotlib.animation import FuncAnimation
 from time import time
 import numpy as np
 
-fps = 60
+fps = 30
 
-particles = Particles(N = 400,
+particles = Particles(N = 10,
                       dt=1/fps,
-                      system_size=100)
+                      system_size=10)
 
-# particles.randomize('RV')
-choice = np.arange(0,100,3)
-particles.V[:,choice] = (2*np.random.rand(2,choice.size)-1)*particles.speed
+particles.randomize('RV')
+# choice = np.arange(0,100,3)
+# particles.V[:,choice] = (2*np.random.rand(2,choice.size)-1)*particles.speed
 
 figure, axes = plt.subplots(1, 2, figsize=(18,9))
 pt_ax , hst_ax = axes
@@ -30,7 +30,7 @@ height *= figure.dpi
 colors = np.zeros((particles.N, 4))
 # colors[:,2] = np.ones(particles.N)
 colors[:,3] = np.ones(particles.N)
-s = height/particles.H*3
+s = height/particles.H*35
 
 points = pt_ax.scatter(particles.R[0], particles.R[1], s = [s]*particles.N, c=colors)
 
