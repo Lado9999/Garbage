@@ -6,8 +6,8 @@ import numpy as np
 ################################################################################
 ## Simulation Parameters
 
-NUM_PARTICLES = 20**2
-SYSTEM_SIZE = 80
+NUM_PARTICLES = 34**2
+SYSTEM_SIZE = 100
 
 # frames per second
 FPS = 60
@@ -27,11 +27,10 @@ MIN_OPACITY = 0.1
 particles = Particles(N=NUM_PARTICLES, L=SYSTEM_SIZE, dt=1/FPS)
 
 ################################################################################
-## Particle Parameters(Can be varied)
+## Here the simulation can be set up
 
-particles.arange_in_grid(3)
-particles.freeze()
-particles.V.T[120:200:4] = particles._speed*np.random.rand(20, 2)
+particles.set_speed(0.001)
+particles.randomize('RV')
 
 ################################################################################
 ################################################################################
@@ -44,6 +43,7 @@ def update_alphas():
     sp = sp/sp.max()
     colors[:,3] = sp
 
+# TODO figure out the scaling factor something to do with 72, 100, and pi
 def get_sizes():
     bbox = pt_ax.get_window_extent().inverse_transformed(figure.dpi_scale_trans)
     return ((bbox.width*36)/(particles.L))**2*np.pi*1.24
@@ -71,8 +71,9 @@ points = pt_ax.scatter(*particles.R,
 
 
 # TODO FIX HISTOGRAMS
+# TODO FIX ZORDER
 v = np.linspace(0,3,100)
-MB_dist, = hst_ax.plot(v, v**2*np.exp(-v**2), 'tab:orange', zorder=10)
+MB_dist, = hst_ax.plot(v, 4*np.pi**(-1/2)*v**2*np.exp(-v**2), 'tab:orange', zorder=10)
 
 nspeeds = particles.normalized_speeds()
 hst_bins = np.linspace(0, 3, NUM_BINS)
@@ -80,13 +81,12 @@ _, _, bar_container = hst_ax.hist(nspeeds, hst_bins, density=True)
 # hst_ax.clear()
 
 def update_histogram():
-    MB_dist.set_zorder(10)
     nspeeds = particles.normalized_speeds()
     hst_n, _ = np.histogram(nspeeds, hst_bins, density=True)
     for h, bar in zip(hst_n, bar_container):
         bar.set_height(h)
-        bar.set_zorder(0)
-
+        bar.set_zorder(10)
+    MB_dist.set_zorder(1)
 
 def update_particles():
     # update positions
@@ -114,6 +114,7 @@ def anim(frame):
     return bar_container + [points]
 
 def main():
+    print(f'speed is {particles.get_speed()}')
     movie = FuncAnimation(figure, anim, blit = True, interval=1/FPS)
     plt.show()
 

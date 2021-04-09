@@ -77,13 +77,13 @@ class Particles:
 	# TODO Recheck the theory --> kT = \sum E_n*exp(-E_n) / \sum E_n
 	def temperature(self):
 		'''
-		Returns effective temperature of the system
+		Returns temperature of the system
 		'''
 		_T = 0
 
 		if (self.V != 0).any():
 			_E = self.energies()
-			_T = np.mean(_E*np.exp(-_E))/np.mean(_E)	
+			_T = np.mean(_E * np.exp(-_E)) / np.mean(_E)	
 
 		return _T
 
@@ -114,9 +114,14 @@ class Particles:
 		if 'V' in opts:
 			_theta = np.random.uniform(0,2*np.pi,self.N)
 			self.V = self._speed * np.vstack((np.cos(_theta), np.sin(_theta)))		
-
-	# TODO WRITE  
+  
 	def equilibrate(self):
+		_spd = np.mean(self.speeds()) 
+		if _spd == 0:
+			print('Particles are frozen')
+		else:
+			# TODO implement
+			pass
 		'''
 		Runs the simulation untill the temperature fluctuations dissipate
 		'''
@@ -133,8 +138,10 @@ class Particles:
 		self.V[1][self.R[1] < 0.5] *= np.sign(self.V[1][self.R[1] < 0.5])
 		self.V[1][self.R[1] > self.L-0.5] *= -np.sign(self.V[1][self.R[1] > self.L-0.5])
 
-		# check collision with eachother
+		
 		# TODO implement a more efficient algorithm
+		# Don't know if possible with just numpy maybe make a Cdll?
+		# check collision with eachother
 		dst = self.R[:,np.newaxis,:] - self.R[:,:,np.newaxis]
 		dst = (dst*dst).sum(axis=0) < 1 # diameter**2
 
