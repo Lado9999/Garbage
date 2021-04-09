@@ -5,9 +5,9 @@ class OutOfBoundsError(Exception):
 
 class Particles:
 	'''
-	Every length in this simulation is normalized to the ball diameter
+	Length in this sim is measured in units of ball diameter
 	'''
-	def __init__(self, N, L=10, dt=.1, speed = .005):
+	def __init__(self, N, L=10, dt=.1):
 
 		# number of balls
 		self.N = N
@@ -27,9 +27,9 @@ class Particles:
 		# We measure speed in terms of L
 		# speed=1 means that a particle with unit speed
 		# traverses the whole system in one step
-		self.set_speed(speed)
+		self.set_speed()
 
-	def set_speed(self, speed):
+	def set_speed(self, speed = .005):
 		'''
 		Set speed of the particles measured in units of L/dt
 		'''
