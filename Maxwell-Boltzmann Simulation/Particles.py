@@ -24,16 +24,15 @@ class Particles:
 		# velocities of the balls
 		self.V = None
 
-		# We measure speed in terms of L
 		# speed=1 means that a particle with unit speed
-		# traverses the whole system in one step
+		# traverses the it's length in one step
 		self.set_speed()
 
-	def set_speed(self, speed = .005):
+	def set_speed(self, speed = .5):
 		'''
-		Set speed of the particles measured in units of L/dt
+		Set speed of the particles measured in units of 1/dt
 		'''
-		self._speed = (self.L / self.dt) * speed
+		self._speed = speed / self.dt
 
 	def get_speed(self):
 		'''

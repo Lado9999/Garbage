@@ -7,10 +7,10 @@ import numpy as np
 ## Simulation Parameters
 
 NUM_PARTICLES = 34**2
-SYSTEM_SIZE = 100
+SYSTEM_SIZE = 120
 
 # frames per second
-FPS = 60
+FPS = 30
 
 # number of histogram bins
 NUM_BINS = 60
@@ -29,7 +29,8 @@ particles = Particles(N=NUM_PARTICLES, L=SYSTEM_SIZE, dt=1/FPS)
 ################################################################################
 ## Here the simulation can be set up
 
-particles.set_speed(0.001)
+particles.set_speed(.9)
+print(f'speed is {particles.get_speed()}')
 particles.randomize('RV')
 
 ################################################################################
@@ -114,7 +115,6 @@ def anim(frame):
     return bar_container + [points]
 
 def main():
-    print(f'speed is {particles.get_speed()}')
     movie = FuncAnimation(figure, anim, blit = True, interval=1/FPS)
     plt.show()
 
