@@ -1,5 +1,7 @@
 import numpy as np
 
+from time import time
+
 class OutOfBoundsError(Exception):
 	pass
 
@@ -82,7 +84,8 @@ class Particles:
 
 		if (self.V != 0).any():
 			_E = self.energies()
-			_T = np.mean(_E * np.exp(-_E)) / np.mean(_E)	
+			_expE = np.exp(-_E)
+			_T = np.mean(_E * _expE) / np.mean(_expE)
 
 		return _T
 
@@ -112,10 +115,10 @@ class Particles:
 
 		if 'V' in opts:
 			_theta = np.random.uniform(0,2*np.pi,self.N)
-			self.V = self._speed * np.vstack((np.cos(_theta), np.sin(_theta)))		
-  
+			self.V = self._speed * np.vstack((np.cos(_theta), np.sin(_theta)))
+
 	def equilibrate(self):
-		_spd = np.mean(self.speeds()) 
+		_spd = np.mean(self.speeds())
 		if _spd == 0:
 			print('Particles are frozen')
 		else:
@@ -125,19 +128,26 @@ class Particles:
 		Runs the simulation untill the temperature fluctuations dissipate
 		'''
 		pass
-			
+
 
 	def step(self):
 
 		# hacky collision with walls
 		# Only update velocities if they are antiparallel to wall normals
 		# so that particles don't get stuck to walls
-		self.V[0][self.R[0] < 0.5] *= np.sign(self.V[0][self.R[0] < 0.5])
-		self.V[0][self.R[0] > self.L-0.5] *= -np.sign(self.V[0][self.R[0] > self.L-0.5])
-		self.V[1][self.R[1] < 0.5] *= np.sign(self.V[1][self.R[1] < 0.5])
-		self.V[1][self.R[1] > self.L-0.5] *= -np.sign(self.V[1][self.R[1] > self.L-0.5])
+		mask = self.R[0] < 0.5
+		self.V[0][mask] *= np.sign(self.V[0][mask])
 
-		
+		mask = self.R[0] > self.L-0.5
+		self.V[0][mask] *= -np.sign(self.V[0][mask])
+
+		mask = self.R[1] < 0.5
+		self.V[1][mask] *= np.sign(self.V[1][mask])
+
+		mask = self.R[1] > self.L-0.5
+		self.V[1][mask] *= -np.sign(self.V[1][mask])
+
+
 		# TODO implement a more efficient algorithm
 		# Don't know if possible with just numpy maybe make a Cdll?
 		# check collision with eachother

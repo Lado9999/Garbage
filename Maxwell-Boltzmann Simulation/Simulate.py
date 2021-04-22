@@ -6,8 +6,8 @@ import numpy as np
 ################################################################################
 ## Simulation Parameters
 
-NUM_PARTICLES = 34**2
-SYSTEM_SIZE = 120
+NUM_PARTICLES = 20**2
+SYSTEM_SIZE = 70
 
 # frames per second
 FPS = 30
@@ -29,9 +29,11 @@ particles = Particles(N=NUM_PARTICLES, L=SYSTEM_SIZE, dt=1/FPS)
 ################################################################################
 ## Here the simulation can be set up
 
-particles.set_speed(.9)
-print(f'speed is {particles.get_speed()}')
-particles.randomize('RV')
+particles.set_speed(.1)
+particles.freeze()
+particles.arange_in_grid()
+particles.randomize('V')
+particles.V[:,:10] = 50 * np.random.rand(2,10)
 
 ################################################################################
 ################################################################################
@@ -112,7 +114,11 @@ def anim(frame):
     # update histogram
     update_histogram()
 
+    with open('T.txt', 'a') as FILE:
+        FILE.write(str(particles.temperature()) + '\n')
+
     return bar_container + [points]
+
 
 def main():
     movie = FuncAnimation(figure, anim, blit = True, interval=1/FPS)
