@@ -1,7 +1,5 @@
 import numpy as np
 
-from time import time
-
 class OutOfBoundsError(Exception):
 	pass
 
@@ -32,14 +30,15 @@ class Particles:
 
 	def set_speed(self, speed = .5):
 		'''
-		Set speed of the particles measured in units of 1/dt
+		Set the most probable speed of the particles
+		measured in units of 1/dt
 		'''
 		self._speed = speed / self.dt
 
 	def get_speed(self):
 		'''
-		Getter and setter for speed is used to avoid direc interaction
-		with self._speed variable
+		Set the most probable speed of the particles
+		measured in units of 1/dt
 		'''
 		return self._speed
 
@@ -75,7 +74,6 @@ class Particles:
 		'''
 		return (self.V*self.V).sum(axis=0)
 
-	# TODO Recheck the theory --> kT = \sum E_n*exp(-E_n) / \sum E_n
 	def temperature(self):
 		'''
 		Returns temperature of the system
@@ -97,17 +95,17 @@ class Particles:
 
 	def normalized_speeds(self):
 		'''
-		Return normalized speed distribution of the particles
+		Return speed distribution of the particles
+		measured in most probable speed
 		'''
-		_factor = 1.0 # TODO change the fator
 		return self.speeds()/self._speed
 
 	def randomize(self, opts):
 		'''
 		Randomize positions and/or velocities of the particles
-		opts is a string of options
-		'V' - randomizes velocities
-		'R' - randomizes positions
+		opts[string] - options
+		'V' - randomize velocities
+		'R' - randomize positions
 		'RV' or 'VR' - both
 		'''
 		if 'R' in opts:
@@ -117,24 +115,35 @@ class Particles:
 			_theta = np.random.uniform(0,2*np.pi,self.N)
 			self.V = self._speed * np.vstack((np.cos(_theta), np.sin(_theta)))
 
-	def equilibrate(self):
-		_spd = np.mean(self.speeds())
-		if _spd == 0:
-			print('Particles are frozen')
-		else:
-			# TODO implement
-			pass
-		'''
-		Runs the simulation untill the temperature fluctuations dissipate
-		'''
-		pass
-
 
 	def step(self):
+		'''
+		Single simulation step
+		'''
 
-		# hacky collision with walls
-		# Only update velocities if they are antiparallel to wall normals
-		# so that particles don't get stuck to walls
+		self._wall_collision()
+		self._ball_collision()
+
+		# modify particle positions according to their new velocities
+		self.R += self.V * self.dt
+
+
+	def _is_arangeble(self):
+		'''
+		Check if number of particles is a perfect square
+		There is currently no way to simulate 50**2 = 2500 particles
+		so we just check up to 50
+		'''
+		range = np.arange(50)
+		return range[range**2 == self.N]
+
+	def _wall_collision(self):
+		'''
+		Check collision with walls and update velocities
+		To avoid particles getting stuck in walls
+		only update speeds when particles are moving towards the walls
+		'''
+
 		mask = self.R[0] < 0.5
 		self.V[0][mask] *= np.sign(self.V[0][mask])
 
@@ -147,10 +156,42 @@ class Particles:
 		mask = self.R[1] > self.L-0.5
 		self.V[1][mask] *= -np.sign(self.V[1][mask])
 
+	def _ball_collision(self):
+		'''
+		Check collision with eachother and update velocities
+		To avoid particles getting stuck together
+		only update speeds when particles are moving towards eachother
+		'''
 
-		# TODO implement a more efficient algorithm
-		# Don't know if possible with just numpy maybe make a Cdll?
-		# check collision with eachother
+		# Xorder = np.argsort(self.R[0], kind='stable')
+		#
+		# for i in range(self.N):
+		# 	for j in range(1,self.N-i):
+		# 		pj = Xorder[j]
+		# 		pi = Xorder[i]
+		# 		if self.R[0, pj] - self.R[0, pi] > 1:
+		# 			break
+		#
+		# 		# Check Collision
+		# 		v1, v2 = self.V.T[[pi, pj]]
+		# 		r1, r2 = self.R.T[[pi, pj]]
+		#
+		# 		r = r1 - r2
+		# 		v = v1 - v2
+		#
+		# 		# if balls are moving away from eachother don't collide
+		# 		# this avoids stickage
+		# 		if np.sign(np.dot(r,v)) < 0:
+		# 			rsq = np.dot(r,r)
+		# 			if rsq < 1:
+		# 				u = r*np.dot(v, r)/rsq
+		#
+		# 				v1 = v1 - u
+		# 				v2 = v2 + u
+		#
+		# 				self.V.T[[pi, pj]] = np.vstack((v1,v2))
+
+
 		dst = self.R[:,np.newaxis,:] - self.R[:,:,np.newaxis]
 		dst = (dst*dst).sum(axis=0) < 1 # diameter**2
 
@@ -167,7 +208,6 @@ class Particles:
 			v = v1 - v2
 
 			# if balls are moving away from eachother don't collide
-			# this avoids stickage
 			if np.sign(np.dot(r,v)) < 0:
 				rsq = np.dot(r,r)
 				u = r*np.dot(v, r)/rsq
@@ -176,13 +216,6 @@ class Particles:
 				v2 = v2 + u
 
 				self.V.T[pair] = np.vstack((v1,v2))
-
-		# modify particle positions according to their velocities
-		self.R += self.V*self.dt
-
-	def _is_arangeble(self):
-		range = np.arange(50)
-		return range[range**2 == self.N]
 
 if __name__=='__main__':
 	pass

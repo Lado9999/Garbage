@@ -1,13 +1,16 @@
 from Particles import Particles
 from matplotlib import pyplot as plt
+from matplotlib import gridspec
 from matplotlib.animation import FuncAnimation
 import numpy as np
+
+from time import time
 
 ################################################################################
 ## Simulation Parameters
 
-NUM_PARTICLES = 20**2
-SYSTEM_SIZE = 70
+NUM_PARTICLES = 100
+SYSTEM_SIZE = 50
 
 # frames per second
 FPS = 30
@@ -31,9 +34,7 @@ particles = Particles(N=NUM_PARTICLES, L=SYSTEM_SIZE, dt=1/FPS)
 
 particles.set_speed(.1)
 particles.freeze()
-particles.arange_in_grid()
-particles.randomize('V')
-particles.V[:,:10] = 50 * np.random.rand(2,10)
+particles.randomize('RV')
 
 ################################################################################
 ################################################################################
@@ -56,8 +57,11 @@ def get_sizes():
 # right top: speed histogram + theoretical distibution
 # right bottom: temperature, energy or some other plot
 
-figure, axes = plt.subplots(1, 2, figsize=(18,9))
-pt_ax , hst_ax = axes
+figure = plt.figure(figsize=(18,9))
+gs = gridspec.GridSpec(2,4)
+pt_ax = plt.subplot(gs[:,:2])
+hst_ax = plt.subplot(gs[0,-2:])
+par_ax = fig.subplot(gs[:,:2])
 
 pt_ax.set_xlim(0, particles.L)
 pt_ax.set_ylim(0, particles.L)
@@ -65,12 +69,12 @@ pt_ax.set_aspect(1)
 
 hst_ax.set_xlim(0, 3)
 hst_ax.set_ylim(0, 3)
-hst_ax.set_aspect(1)
+hst_ax.set_aspect(.5)
 
-update_alphas()
+# update_alphas()
 points = pt_ax.scatter(*particles.R,
-                        s = get_sizes(),
-                        c = colors, edgecolors = 'none')
+                        s = get_sizes())#,
+                        # c = colors, edgecolors = 'none')
 
 
 # TODO FIX HISTOGRAMS
@@ -96,26 +100,25 @@ def update_particles():
     points.set_offsets(particles.R.T)
 
     # update particle alphas according to their speeds
-    update_alphas()
-    points.set_facecolor(colors)
-    points.set_edgecolor('none')
+    # update_alphas()
+    # points.set_facecolor(colors)
+    # points.set_edgecolor('none')
 
     # update particle sizes in case window gets resized
     # COMMENT OUT WHEN SAVING MOVIE
     points.set_sizes([get_sizes()]*particles.N)
 
+
 def anim(frame):
     # simulate one step
+    timer = time()
     particles.step()
-
+    print((time() - timer)*1e3)
     # update Particles
     update_particles()
 
     # update histogram
     update_histogram()
-
-    with open('T.txt', 'a') as FILE:
-        FILE.write(str(particles.temperature()) + '\n')
 
     return bar_container + [points]
 
