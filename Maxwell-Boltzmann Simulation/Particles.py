@@ -27,33 +27,23 @@ class Particles:
 
 		# speed=1 means that a particle with unit speed
 		# traverses the it's length in one step
-		self.set_speed()
-
-		self._pdist_pairs = self._generate_pairs()
-		
-	def _generate_pairs(self):
-		_pairs = []
-
-		for i in range(self.N):
-			for j in range(i+1,self.N):
-				_pairs.append((i,j))
-
-		return np.asarray(_pairs)
+		self.set_mpspeed()
+		self._generate_pairs()
 
 
-	def set_speed(self, speed = .5):
+	def set_mpspeed(self, mpspeed = .5):
 		'''
 		Set the most probable speed of the particles
 		measured in units of 1/dt
 		'''
-		self._speed = speed / self.dt
+		self._mpspeed = mpspeed / self.dt
 
-	def get_speed(self):
+	def get_mpspeed(self):
 		'''
 		Set the most probable speed of the particles
 		measured in units of 1/dt
 		'''
-		return self._speed
+		return self._mpspeed
 
 	def freeze(self):
 		'''
@@ -106,27 +96,27 @@ class Particles:
 		'''
 		return np.sqrt(self.energies())
 
-	def normalized_speeds(self):
+	def normalized_mpspeeds(self):
 		'''
 		Return speed distribution of the particles
-		measured in most probable speed
+		normalized by the most probable speed
 		'''
-		return self.speeds()/self._speed
+		return self.speeds()/self._mpspeed
 
 	def randomize(self, opts):
 		'''
 		Randomize positions and/or velocities of the particles
 		opts[string] - options
-		'V' - randomize velocities
-		'R' - randomize positions
-		'RV' or 'VR' - both
+			'V' - randomize velocities
+			'R' - randomize positions
+			'RV' or 'VR' - both
 		'''
 		if 'R' in opts:
 			self.R = np.random.uniform(0.5, self.L - 0.5, (2,self.N))
 
 		if 'V' in opts:
 			_theta = np.random.uniform(0,2*np.pi,self.N)
-			self.V = self._speed * np.vstack((np.cos(_theta), np.sin(_theta)))
+			self.V = self._mpspeed * np.vstack((np.cos(_theta), np.sin(_theta)))
 
 
 	def step(self):
@@ -140,6 +130,21 @@ class Particles:
 		# modify particle positions according to their new velocities
 		self.R += self.V * self.dt
 
+################################################################################
+## Helper functions
+
+
+	def _generate_pairs(self):
+		'''
+		Generate list of pairs corresponding to the condensed output of pdist
+		'''
+		_pairs = []
+
+		for i in range(self.N):
+			for j in range(i+1,self.N):
+				_pairs.append((i,j))
+
+		self._pdist_pairs = np.asarray(_pairs)
 
 	def _is_arangeble(self):
 		'''
@@ -147,8 +152,8 @@ class Particles:
 		There is currently no way to simulate 50**2 = 2500 particles
 		so we just check up to 50
 		'''
-		range = np.arange(50)
-		return range[range**2 == self.N]
+		sqrange = np.arange(50)
+		return sqrange[range**2 == self.N]
 
 	def _wall_collision(self):
 		'''
@@ -172,7 +177,7 @@ class Particles:
 	def _ball_collision(self):
 		'''
 		Check collision with eachother and update velocities
-                
+
 		To avoid particles getting stuck together
 		only update speeds when particles are moving towards eachother
 		'''
