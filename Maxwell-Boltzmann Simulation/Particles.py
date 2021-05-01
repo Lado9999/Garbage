@@ -29,6 +29,18 @@ class Particles:
 		# traverses the it's length in one step
 		self.set_speed()
 
+		self._pdist_pairs = self._generate_pairs()
+		
+	def _generate_pairs(self):
+		_pairs = []
+
+		for i in range(self.N):
+			for j in range(i+1,self.N):
+				_pairs.append((i,j))
+
+		return np.asarray(_pairs)
+
+
 	def set_speed(self, speed = .5):
 		'''
 		Set the most probable speed of the particles
@@ -160,6 +172,7 @@ class Particles:
 	def _ball_collision(self):
 		'''
 		Check collision with eachother and update velocities
+                
 		To avoid particles getting stuck together
 		only update speeds when particles are moving towards eachother
 		'''
@@ -192,14 +205,17 @@ class Particles:
 		#
 		# 				self.V.T[[pi, pj]] = np.vstack((v1,v2))
 
+		dst = pdist(self.R.T, 'euclidean')
+		pairs = self._pdist_pairs[dst < 1]
 
-		dst = self.R[:,np.newaxis,:] - self.R[:,:,np.newaxis]
-		dst = (dst*dst).sum(axis=0) < 1 # diameter**2
 
-		for i,d in enumerate(dst):
-			d[:i+1] = False
+		#dst = self.R[:,np.newaxis,:] - self.R[:,:,np.newaxis]
+                #dst = (dst*dst).sum(axis=0) < 1 # diameter**2
 
-		pairs = np.argwhere(dst)
+		#for i,d in enumerate(dst):
+		#	d[:i+1] = False
+
+		#pairs = np.argwhere(dst)
 
 		for pair in pairs:
 			v1, v2 = self.V.T[pair]
@@ -217,6 +233,7 @@ class Particles:
 				v2 = v2 + u
 
 				self.V.T[pair] = np.vstack((v1,v2))
+
 
 if __name__=='__main__':
 	pass

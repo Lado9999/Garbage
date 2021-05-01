@@ -61,7 +61,7 @@ figure = plt.figure(figsize=(18,9))
 gs = gridspec.GridSpec(2,4)
 pt_ax = plt.subplot(gs[:,:2])
 hst_ax = plt.subplot(gs[0,-2:])
-par_ax = fig.subplot(gs[:,:2])
+par_ax = figure.subplot(gs[:,:2])
 
 pt_ax.set_xlim(0, particles.L)
 pt_ax.set_ylim(0, particles.L)
