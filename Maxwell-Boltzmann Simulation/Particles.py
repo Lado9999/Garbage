@@ -1,4 +1,5 @@
 import numpy as np
+from itertools import combinations
 from scipy.spatial.distance import pdist
 
 class OutOfBoundsError(Exception):
@@ -28,7 +29,9 @@ class Particles:
 		# speed=1 means that a particle with unit speed
 		# traverses the it's length in one step
 		self.set_mpspeed()
-		self._generate_pairs()
+
+		# pairs corresponding to condensed output of pdist
+		self._pdist_pairs = np.array(list(combinations(range(self.N), 2)))
 
 
 	def set_mpspeed(self, mpspeed = .5):
@@ -51,14 +54,14 @@ class Particles:
 		'''
 		self.V = np.zeros((2, self.N))
 
-	def arange_in_grid(self, spacing=0):
+	def arrange_in_grid(self, spacing=0):
 		'''
-		Arange particles in a centered square grid with given grid spacing.
-		Will only arange if particle number is a perfect square
+		Arrange particles in a centered square grid with given grid spacing.
+		Will only arrange if particle number is a perfect square
 		and the grid fits inside the axis bounds.
 		'''
 
-		_num = self._is_arangeble()
+		_num = self._is_arrangeable()
 		if (spacing + 1) * _num > self.L + 1:
 			raise OutOfBoundsError('Ball grid is out of bounds')
 
@@ -95,7 +98,7 @@ class Particles:
 		'''
 		return np.sqrt(self.energies())
 
-	def normalized_mpspeeds(self):
+	def normalized_speeds(self):
 		'''
 		Return speed distribution of the particles
 		normalized by the most probable speed
@@ -133,19 +136,7 @@ class Particles:
 ## Helper functions
 
 
-	def _generate_pairs(self):
-		'''
-		Generate list of pairs corresponding to the condensed output of pdist
-		'''
-		_pairs = []
-
-		for i in range(self.N):
-			for j in range(i+1,self.N):
-				_pairs.append((i,j))
-
-		self._pdist_pairs = np.asarray(_pairs)
-
-	def _is_arangeble(self):
+	def _is_arrangeable(self):
 		'''
 		Check if number of particles is a perfect square
 		There is currently no way to simulate 50**2 = 2500 particles
@@ -153,10 +144,10 @@ class Particles:
 		'''
 		_sqrange = np.arange(50)
 		_sqrange = _sqrange[_sqrange**2 == self.N]
-		if _sqrange.shape != 0:
-			return _sqrange[0]
-		else:
+		if _sqrange.size == 0:
 			raise ValueError('Can\'t be arranged, Not a perfect square')
+		else:
+			return _sqrange[0]
 
 	def _wall_collision(self):
 		'''
@@ -213,17 +204,16 @@ class Particles:
 		#
 		# 				self.V.T[[pi, pj]] = np.vstack((v1,v2))
 
-		dst = pdist(self.R.T, 'euclidean')
+		dst = pdist(self.R.T, 'sqeuclidean')
 		pairs = self._pdist_pairs[dst < 1]
 
-
-		#dst = self.R[:,np.newaxis,:] - self.R[:,:,np.newaxis]
-                #dst = (dst*dst).sum(axis=0) < 1 # diameter**2
-
-		#for i,d in enumerate(dst):
-		#	d[:i+1] = False
-
-		#pairs = np.argwhere(dst)
+		# dst = self.R[:,np.newaxis,:] - self.R[:,:,np.newaxis]
+		# dst = (dst*dst).sum(axis=0) < 1 # diameter**2
+		#
+		# for i,d in enumerate(dst):
+		# 	d[:i+1] = False
+		#
+		# pairs = np.argwhere(dst)
 
 		for pair in pairs:
 			v1, v2 = self.V.T[pair]

@@ -9,8 +9,8 @@ from time import time
 ################################################################################
 ## Simulation Parameters
 
-NUM_PARTICLES = 100
-SYSTEM_SIZE = 50
+NUM_PARTICLES = 500
+SYSTEM_SIZE = 60
 
 # frames per second
 FPS = 30
@@ -27,12 +27,14 @@ MIN_OPACITY = 0.1
 
 ################################################################################
 
-particles = Particles(N=NUM_PARTICLES, L=SYSTEM_SIZE, dt=1/FPS)
+particles = Particles(N  =  NUM_PARTICLES,
+                      L  =  SYSTEM_SIZE,
+                      dt =  1.0/FPS)
 
 ################################################################################
 ## Here the simulation can be set up
 
-particles.set_speed(.1)
+particles.set_mpspeed(.1)
 particles.freeze()
 particles.randomize('RV')
 
@@ -50,7 +52,7 @@ def update_alphas():
 # TODO figure out the scaling factor something to do with 72, 100, and pi
 def get_sizes():
     bbox = pt_ax.get_window_extent().inverse_transformed(figure.dpi_scale_trans)
-    return ((bbox.width*36)/(particles.L))**2*np.pi*1.24
+    return ((bbox.width*36)/(particles.L))**2*np.pi*1.2395
 
 # TODO Rearrange Subplots
 # Left: particles in a box
@@ -61,7 +63,7 @@ figure = plt.figure(figsize=(18,9))
 gs = gridspec.GridSpec(2,4)
 pt_ax = plt.subplot(gs[:,:2])
 hst_ax = plt.subplot(gs[0,-2:])
-par_ax = figure.subplot(gs[:,:2])
+par_ax = plt.subplot(gs[:,:2])
 
 pt_ax.set_xlim(0, particles.L)
 pt_ax.set_ylim(0, particles.L)
