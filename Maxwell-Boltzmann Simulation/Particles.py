@@ -81,14 +81,15 @@ class Particles:
 		'''
 		Returns temperature of the system
 		'''
-		_T = 0
-
-		if (self.V != 0).any():
-			_E = self.energies()
-			_expE = np.exp(-_E)
-			_T = np.mean(_E * _expE) / np.mean(_expE)
-
-		return _T
+		return self.energies().mean()  # kT = 2/dim * 1/N * \sum_i mv^2/2
+		# _T = 0
+		#
+		# if (self.V != 0).any():
+		# 	_E = self.energies()
+		# 	_expE = np.exp(-_E)
+		# 	_T = np.mean(_E * _expE) / np.mean(_expE)
+		#
+		# return _T
 
 	def speeds(self):
 		'''
