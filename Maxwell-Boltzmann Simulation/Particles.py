@@ -57,31 +57,27 @@ class Particles:
 		Will only arange if particle number is a perfect square
 		and the grid fits inside the axis bounds.
 		'''
+
 		_num = self._is_arangeble()
+		if (spacing + 1) * _num > self.L + 1:
+			raise OutOfBoundsError('Ball grid is out of bounds')
 
-		if _num.shape != 0:
-			_num = _num[0]
-			if (spacing + 1) * _num > self.L + 1:
-				raise OutOfBoundsError('Ball grid is out of bounds')
+		_X = np.arange(_num)*(spacing + 1) + (self.L + spacing + 1 - _num*(spacing + 1))/2
 
-			_X = np.arange(_num)*(spacing + 1) + (self.L + spacing + 1 - _num*(spacing + 1))/2
-
-			self.R = np.vstack(np.meshgrid(_X, _X)).reshape(2, self.N)
-
-		else:
-			raise ValueError('Can\'t be arranged, Not a perfect square')
+		self.R = np.vstack(np.meshgrid(_X, _X)).reshape(2, self.N)
 
 	def energies(self):
 		'''
 		Return energy distribution of the particles
 		'''
+
 		return (self.V*self.V).sum(axis=0)
 
 	def temperature(self):
 		'''
 		Returns temperature of the system
 		'''
-		return self.energies().mean()  # kT = 2/dim * 1/N * \sum_i mv^2/2
+
 		# _T = 0
 		#
 		# if (self.V != 0).any():
@@ -90,6 +86,8 @@ class Particles:
 		# 	_T = np.mean(_E * _expE) / np.mean(_expE)
 		#
 		# return _T
+
+		return self.energies().mean()  # kT = 2/dim * 1/N * \sum_i mv^2/2
 
 	def speeds(self):
 		'''
@@ -153,8 +151,12 @@ class Particles:
 		There is currently no way to simulate 50**2 = 2500 particles
 		so we just check up to 50
 		'''
-		sqrange = np.arange(50)
-		return sqrange[range**2 == self.N]
+		_sqrange = np.arange(50)
+		_sqrange = _sqrange[_sqrange**2 == self.N]
+		if _sqrange.shape != 0:
+			return _sqrange[0]
+		else:
+			raise ValueError('Can\'t be arranged, Not a perfect square')
 
 	def _wall_collision(self):
 		'''
