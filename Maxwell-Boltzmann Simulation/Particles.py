@@ -81,21 +81,13 @@ class Particles:
 		Returns temperature of the system
 		'''
 
-		# _T = 0
-		#
-		# if (self.V != 0).any():
-		# 	_E = self.energies()
-		# 	_expE = np.exp(-_E)
-		# 	_T = np.mean(_E * _expE) / np.mean(_expE)
-		#
-		# return _T
-
 		return self.energies().mean()  # kT = 2/dim * 1/N * \sum_i mv^2/2
 
 	def speeds(self):
 		'''
 		Return speed distribution of the particles
 		'''
+
 		return np.sqrt(self.energies())
 
 	def normalized_speeds(self):
@@ -103,6 +95,7 @@ class Particles:
 		Return speed distribution of the particles
 		normalized by the most probable speed
 		'''
+
 		return self.speeds()/self._mpspeed
 
 	def randomize(self, opts):
@@ -113,6 +106,7 @@ class Particles:
 			'R' - randomize positions
 			'RV' or 'VR' - both
 		'''
+
 		if 'R' in opts:
 			self.R = np.random.uniform(0.5, self.L - 0.5, (2,self.N))
 
@@ -206,14 +200,6 @@ class Particles:
 
 		dst = pdist(self.R.T, 'sqeuclidean')
 		pairs = self._pdist_pairs[dst < 1]
-
-		# dst = self.R[:,np.newaxis,:] - self.R[:,:,np.newaxis]
-		# dst = (dst*dst).sum(axis=0) < 1 # diameter**2
-		#
-		# for i,d in enumerate(dst):
-		# 	d[:i+1] = False
-		#
-		# pairs = np.argwhere(dst)
 
 		for pair in pairs:
 			v1, v2 = self.V.T[pair]

@@ -10,7 +10,7 @@ from time import time
 ## Simulation Parameters
 
 NUM_PARTICLES = 500
-SYSTEM_SIZE = 60
+SYSTEM_SIZE = 100
 
 # frames per second
 FPS = 30
